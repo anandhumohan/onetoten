@@ -59,7 +59,7 @@ public class DPselector {
 	// have to change this method to handle above cases.
 	public String setDP(String storeId, String DPId, boolean busy, Date deliveryTime) {
 
-		// creating maps first time
+		// creating two maps when first guy login
 		if (!DPQueues.containsKey(storeId)) {
 			queue = new LinkedList<String>();
 			queue.add(DPId);
@@ -69,15 +69,29 @@ public class DPselector {
 			status.setBusy(busy);
 			dpStatus.put(DPId, status);
 		} else {
+			if (dpStatus.containsKey(DPId)) {
+				queue = DPQueues.get(storeId);
+				queue.add(DPId);
+				DPStatus dp = dpStatus.get(DPId);
+				dp.setBusy(busy);
+				dpStatus.put(DPId, dp);
+				DPQueues.put(storeId, queue);
 
-			queue = DPQueues.get(storeId);
-			DPStatus dp = dpStatus.get(DPId);
-			dp.setBusy(false);
+			} else {
+				status = new DPStatus();
+				status.setDPname(DPId);
+				status.setBusy(busy);
+				dpStatus.put(DPId, status);
+				queue = DPQueues.get(storeId); 
+				queue.add(DPId);
+				DPQueues.put(storeId, queue);
+
+			}
 
 		}
 		if (!(deliveryTime == null)) {
 			DPStatus dp = dpStatus.get(DPId);
-			dp.setNoOfOrdersDelivered(dp.getNoOfOrdersDelivered()+1);
+			dp.setNoOfOrdersDelivered(dp.getNoOfOrdersDelivered() + 1);
 
 		}
 
@@ -102,9 +116,10 @@ public class DPselector {
 
 			System.out.println("returnTime" + returnTime);
 			Date addExpcAndThreshold = new TimeHelper().addMinute(expectedPrep, threshold);
-		//	expectedPrep = new TimeHelper().addMinute(expectedPrep, threshold);
+			// expectedPrep = new TimeHelper().addMinute(expectedPrep,
+			// threshold);
 			if (returnTime.getTime() < addExpcAndThreshold.getTime()) {
-				//possible dpId
+				// possible dpId
 				DPId = cal.getDPId();
 				System.out.println("possible DP" + DPId);
 
